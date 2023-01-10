@@ -1,0 +1,19 @@
+/* To learn more about this file see: https://angular.io/config/tsconfig. */
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../out-tsc/lib",
+    "declaration": true,
+    "declarationMap": true,
+    "inlineSources": true,
+    "types": [],
+    "paths": {
+      "@angular/*": ["./node_modules/@angular/*"],
+      "rxjs": ["./node_modules/rxjs"],
+      "rxjs/*": ["./node_modules/rxjs/*"],
+      "@rs-nglib/components": ["../components/src/public-api"],
+      "@rs-nglib/core": ["../core/src/public-api"]
+    }
+  },
+  "exclude": ["src/test.ts", "**/*.spec.ts"]
+}

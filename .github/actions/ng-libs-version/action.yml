@@ -1,0 +1,45 @@
+name: "Ng Libraries Version Action"
+
+inputs:
+  lib-name:
+    description: "Library name"
+    required: true
+  type:
+    description: "Version type"
+    required: true
+  user-email:
+    description: "Git user email"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Node Environment
+      uses: actions/setup-node@v3
+      with:
+        node-version: 16
+
+    - name: Git user configuration
+      shell: bash
+      run: |
+        git config --global user.name 'RavinduSachintha'
+        git config --global user.email '${{ inputs.user-email }}'
+        git config pull.rebase true
+
+    - name: Initial git pull
+      shell: bash
+      run: git pull origin main
+
+    - name: Npm version increment
+      shell: bash
+      run: |
+        cd ./projects/${{ inputs.lib-name }} 
+        mkdir .git
+        npm version ${{ inputs.type }} -m "[RELEASE] ${{ inputs.lib-name }} %s"
+
+    - name: Git pull & push
+      shell: bash
+      run: |
+        git checkout main
+        git pull
+        git push

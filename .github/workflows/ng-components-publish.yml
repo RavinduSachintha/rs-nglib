@@ -1,0 +1,122 @@
+# name: "Ng-Components Library Package"
+
+# on:
+#   release:
+#     types: [published]
+
+# concurrency:
+#   group: libs-publishing-group
+
+# jobs:
+#   pre-build:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout repository
+#         uses: actions/checkout@v3
+
+#       - name: Setup Node Environment
+#         uses: actions/setup-node@v3
+#         with:
+#           node-version: 16
+
+#       - name: Npm install, build, and test
+#         run: |
+#           npm ci
+#           npm run build components
+#           npm run test -- components --source-map=false --browsers=ChromeHeadless --watch=false
+
+#   version-minor:
+#     needs: pre-build
+#     runs-on: ubuntu-latest
+#     if: "contains(github.event.release.name, '[COMPONENTS_MINOR_RELEASE]')"
+#     steps:
+#       - name: Checkout repository
+#         uses: actions/checkout@v2
+#         with:
+#           token: ${{ secrets.NPM_TOKEN }}
+
+#       - name: Git user configuration
+#         run: |
+#           git config --global user.name 'RavinduSachintha'
+#           git config --global user.email '${{ secrets.RS_EMAIL }}'
+#           git config pull.rebase true
+
+#       - name: Npm version increment
+#         run: |
+#           cd ./projects/components
+#           mkdir .git
+#           npm version minor -m "[RELEASE] COMPONENTS %s"
+#           git pull
+#           git push
+
+#   version-major:
+#     needs: pre-build
+#     runs-on: ubuntu-latest
+#     if: "contains(github.event.release.name, '[COMPONENTS_MAJOR_RELEASE]')"
+#     steps:
+#       - name: Checkout repository
+#         uses: actions/checkout@v2
+#         with:
+#           token: ${{ secrets.NPM_TOKEN }}
+
+#       - name: Git user configuration
+#         run: |
+#           git config --global user.name 'RavinduSachintha'
+#           git config --global user.email '${{ secrets.RS_EMAIL }}'
+#           git config pull.rebase true
+
+#       - name: Npm version increment
+#         run: |
+#           cd ./projects/components
+#           mkdir .git
+#           npm version major -m "[RELEASE] COMPONENTS %s"
+#           git pull
+#           git push
+
+#   build:
+#     if: ${{ always() && contains(join(needs.*.result, ','), 'success') }}
+#     needs: [version-minor, version-major]
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout repository
+#         uses: actions/checkout@v3
+
+#       - name: Setup Node Environment
+#         uses: actions/setup-node@v3
+#         with:
+#           node-version: 16
+
+#       - name: Npm install, build, and test
+#         run: |
+#           npm ci
+#           npm run build components
+
+#       - name: Archive production artifacts
+#         uses: actions/upload-artifact@v3
+#         with:
+#           name: dist-components
+#           path: dist/components
+#           retention-days: 2
+
+#   publish-gpr:
+#     needs: build
+#     runs-on: ubuntu-latest
+#     permissions:
+#       contents: read
+#       packages: write
+#     steps:
+#       - name: Setup Node Environment
+#         uses: actions/setup-node@v3
+#         with:
+#           node-version: 16
+#           registry-url: https://npm.pkg.github.com/
+
+#       - name: Download production artifacts
+#         uses: actions/download-artifact@v3
+#         with:
+#           name: dist-components
+
+#       - name: Npm publish
+#         run: npm publish
+#         env:
+#           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}

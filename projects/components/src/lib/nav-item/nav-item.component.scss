@@ -1,0 +1,45 @@
+:host {
+  display: inline-block;
+  position: relative;
+  padding: 0;
+}
+
+a {
+  display: block;
+  position: relative;
+  padding: var(--paddingY, 8px) 0;
+  margin: 0 var(--paddingX, 20px);
+
+  background-color: transparent;
+  opacity: var(--opacity, 1);
+
+  text-align: center;
+  color: var(--labelColor, #49515d);
+  font-size: var(--labelFontSize, 15px);
+  line-height: 1;
+  font-weight: 400;
+  text-decoration: none;
+  outline: none;
+
+  &:hover {
+    cursor: pointer;
+
+    &::after {
+      width: 25px;
+    }
+  }
+
+  &::after {
+    display: block;
+    position: absolute;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    content: "";
+    width: 0;
+    height: 2px;
+    margin: 0 auto;
+    background-color: var(--labelHoverUnderlineColor, #2eca7f);
+    transition: all 0.15s ease-in-out;
+  }
+}

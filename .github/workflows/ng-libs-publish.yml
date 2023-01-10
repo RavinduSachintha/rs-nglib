@@ -1,0 +1,101 @@
+name: "Ng Libraries Publish"
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  pre-build-core:
+    runs-on: ubuntu-latest
+    if: "contains(github.event.release.name, '[CORE_MINOR_RELEASE]') || contains(github.event.release.name, '[CORE_MAJOR_RELEASE]')"
+    # outputs:
+    #   status: ${{ steps.core-pre-build-action.outputs.status }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Core lib pre-build
+        id: core-pre-build-action
+        uses: ./.github/actions/ng-libs-pre-build
+        with:
+          lib-name: core
+
+  # test-output:
+  #   runs-on: ubuntu-latest
+  #   needs: pre-build-core
+  #   steps:
+  #     - run: echo ${{needs.pre-build-core.outputs.status}}
+
+  version-minor-core:
+    runs-on: ubuntu-latest
+    needs: pre-build-core
+    if: "contains(github.event.release.name, '[CORE_MINOR_RELEASE]')"
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.NPM_TOKEN }}
+
+      - name: Core lib version-minor
+        id: core-version-minor-action
+        uses: ./.github/actions/ng-libs-version
+        with:
+          lib-name: core
+          type: minor
+          user-email: ${{ secrets.RS_EMAIL }}
+
+  version-major-core:
+    runs-on: ubuntu-latest
+    needs: pre-build-core
+    if: "contains(github.event.release.name, '[CORE_MAJOR_RELEASE]')"
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.NPM_TOKEN }}
+
+      - name: Core lib version-major
+        id: core-version-major-action
+        uses: ./.github/actions/ng-libs-version
+        with:
+          lib-name: core
+          type: major
+          user-email: ${{ secrets.RS_EMAIL }}
+
+  build-core:
+    runs-on: ubuntu-latest
+    needs: [version-minor-core, version-major-core]
+    if: ${{ always() && contains(join(needs.*.result, ','), 'success') }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Core lib build
+        id: core-build-action
+        uses: ./.github/actions/ng-libs-build
+        with:
+          lib-name: core
+          artifact-name: dist-core
+          artifact-path: dist/core
+
+  publish-gpr-core:
+    runs-on: ubuntu-latest
+    needs: build-core
+    if: ${{ always() && needs.build-core.result == 'success' }}
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Core lib publish
+        id: core-publish-action
+        uses: ./.github/actions/ng-libs-publish
+        with:
+          artifact-name: dist-core
+          npm-token: ${{secrets.NPM_TOKEN}}

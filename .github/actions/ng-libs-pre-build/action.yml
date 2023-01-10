@@ -1,0 +1,28 @@
+name: "Ng Libraries PreBuild Action"
+
+inputs:
+  lib-name:
+    description: "Library name"
+    required: true
+
+# outputs:
+#   status:
+#     description: "Job status"
+#     value: ${{ steps.npm-build-test-step.outputs.status }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Node Environment
+      uses: actions/setup-node@v3
+      with:
+        node-version: 16
+
+    - name: Npm install, build, and test
+      id: npm-build-test-step
+      shell: bash
+      run: |
+        npm ci
+        npm run build ${{ inputs.lib-name }}
+        npm run test -- ${{ inputs.lib-name }} --source-map=false --browsers=ChromeHeadless --watch=false
+        # echo "status=success" >> $GITHUB_OUTPUT

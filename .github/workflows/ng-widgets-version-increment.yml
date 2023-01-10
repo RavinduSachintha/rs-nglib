@@ -1,0 +1,52 @@
+name: "Ng-Widgets Library Versioning"
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - projects/widgets/**
+
+concurrency:
+  group: libs-versioning-group
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    if: "!startsWith(github.event.head_commit.message, '[RELEASE]')"
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node Environment
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Npm install, build, and test
+        run: |
+          npm ci
+          npm run build widgets
+          npm run test -- widgets --source-map=false --browsers=ChromeHeadless --watch=false
+
+  version:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.NPM_TOKEN }}
+
+      - name: Git user configuration
+        run: |
+          git config --global user.name 'RavinduSachintha'
+          git config --global user.email '${{ secrets.RS_EMAIL }}'
+          git config pull.rebase true
+
+      - name: Npm version increment
+        run: |
+          cd ./projects/widgets
+          mkdir .git
+          npm version patch -m "[RELEASE] WIDGETS %s"
+          git pull origin main
+          git push

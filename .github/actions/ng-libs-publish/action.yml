@@ -1,0 +1,29 @@
+name: "Ng Libraries Publish Action"
+
+inputs:
+  artifact-name:
+    description: "Artifact name"
+    required: true
+  npm-token:
+    description: "NPM auth token"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Node Environment
+      uses: actions/setup-node@v3
+      with:
+        node-version: 16
+        registry-url: https://npm.pkg.github.com/
+
+    - name: Download production artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: ${{ inputs.artifact-name }}
+
+    - name: Npm publish
+      shell: bash
+      run: npm publish
+      env:
+        NODE_AUTH_TOKEN: ${{ inputs.npm-token }}

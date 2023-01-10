@@ -1,0 +1,33 @@
+name: "Ng Libraries Build Action"
+
+inputs:
+  lib-name:
+    description: "Library name"
+    required: true
+  artifact-name:
+    description: "Artifact name"
+    required: true
+  artifact-path:
+    description: "Artifact path"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Node Environment
+      uses: actions/setup-node@v3
+      with:
+        node-version: 16
+
+    - name: Npm install and build
+      shell: bash
+      run: |
+        npm ci
+        npm run build ${{ inputs.lib-name }}
+
+    - name: Archive production artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: ${{ inputs.artifact-path }}
+        retention-days: 2
