@@ -28,7 +28,9 @@ runs:
 
     - name: Initial git pull
       shell: bash
-      run: git pull origin main
+      run: |
+        git pull origin main
+        git checkout main
 
     - name: Npm version increment
       shell: bash
@@ -40,6 +42,5 @@ runs:
     - name: Git pull & push
       shell: bash
       run: |
-        git checkout main
         git pull
         git push
